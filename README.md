@@ -1,4 +1,4 @@
 # TaskMaster
-TaskMaster allows you to view various info about your system such as CPU usage, as well as manage currently running tasks.
+TaskMaster will allow you to manage tasks running on your PC, as well as see your current CPU and RAM usage.
 
-The current version only allows you to see CPU usage, but more features will be added soon.
+It currently allows you to see your CPU and RAM usage, as well as a list of currently running processes.
