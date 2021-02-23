@@ -23,9 +23,8 @@ def update_vars(values, window):
             values[2].insert("", "end", values=(psutil.Process(pid).name(), pid))
 
     # Delete processes from the treeview if they are no longer running.
-    system_pids = [process.info["pid"] for process in psutil.process_iter(["pid"])]
-    for i, pid in enumerate(treeview_pids):
-        if pid not in system_pids:
+    for pid in treeview_pids:
+        if not psutil.pid_exists(pid):
             for child in values[2].get_children():
                 if values[2].item(child)["values"][1] == pid:
                     values[2].delete(child)
