@@ -32,7 +32,7 @@ class GUI:
         # Sets up the list of processes in a Treeview, and the scrollbar to scroll it with.
         scrollbar = tk.Scrollbar(self.window)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.treeview = ttk.Treeview(self.window, columns=("Name", "PID"), show="headings",
+        self.treeview = ttk.Treeview(self.window, columns=("Name", "PID"), show="headings", selectmode="browse",
                                      yscrollcommand=scrollbar.set)
         self.treeview.heading("#1", text="Name", anchor=tk.W)
         self.treeview.heading("#2", text="PID", anchor=tk.W)
@@ -42,6 +42,10 @@ class GUI:
         scrollbar.config(command=self.treeview.yview)
         for i in psutil.pids():
             self.treeview.insert("", "end", values=(psutil.Process(i).name(), i))
+
+        # This button allows the user to end a selected process.
+        end_button = tk.Button(text="End process", command=self.end_process)
+        end_button.pack(side=tk.LEFT, padx=(5, 0), pady=(0, 5))
 
         self.window.after(1000, self.update)
         self.window.mainloop()
@@ -70,6 +74,13 @@ class GUI:
                         self.treeview.delete(child)
 
         self.window.after(1000, self.update)
+
+    # Function called when the 'end process' button is clicked - terminates the selected process.
+    def end_process(self):
+        if self.treeview.selection():
+            process_to_end = self.treeview.selection()[0]
+            pid = self.treeview.item(process_to_end)["values"][1]
+            psutil.Process(pid).terminate()
 
 
 if __name__ == "__main__":
