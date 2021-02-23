@@ -5,77 +5,72 @@ import tkinter.ttk as ttk
 import psutil
 
 
-# Callback function to update the CPU and RAM usage, as well as the list of processes. Calls after() again so that it is
-# repeatedly updated.
-def update_vars(values, window):
-    # Set the CPU and RAM usage labels.
-    values[0].set("CPU usage: " + str(psutil.cpu_percent()) + "%")
-    values[1].set("RAM usage: " + str(psutil.virtual_memory()[2]) + "%")
+class GUI:
 
-    # Get pids currently in treeview.
-    treeview_pids = []
-    for child in values[2].get_children():
-        treeview_pids.append(values[2].item(child)["values"][1])
+    # Initialise and run the GUI.
+    # cpu_usage, ram_usage and treeview are set as instance attributes as they need to be updated.
+    # Other GUI elements are just left as locals, as they do not need to be accessed after the window setup.
+    def __init__(self):
+        # Set up the window.
+        self.window = tk.Tk()
+        self.window.title("TaskMaster")
+        self.window.geometry("300x300")
+        self.window.resizable(False, False)
 
-    # Add any processes to the treeview if they are not already in it.
-    for pid in psutil.pids():
-        if pid not in treeview_pids:
-            values[2].insert("", "end", values=(psutil.Process(pid).name(), pid))
+        # The CPU usage is stored in a StringVar, so when it is updated, the label using it is also updated.
+        self.cpu_usage = tk.StringVar()
+        self.cpu_usage.set("CPU usage: " + str(psutil.cpu_percent()) + "%")
+        cpu_usage_label = tk.Label(textvariable=self.cpu_usage, padx=5)
+        cpu_usage_label.pack(anchor=tk.W)
 
-    # Delete processes from the treeview if they are no longer running.
-    for pid in treeview_pids:
-        if not psutil.pid_exists(pid):
-            for child in values[2].get_children():
-                if values[2].item(child)["values"][1] == pid:
-                    values[2].delete(child)
+        # Percentage of RAM used.
+        self.ram_usage = tk.StringVar()
+        self.ram_usage.set("RAM usage: " + str(psutil.virtual_memory()[2]) + "%")
+        ram_usage_label = tk.Label(textvariable=self.ram_usage, padx=5)
+        ram_usage_label.pack(anchor=tk.W)
 
-    # Runs the callback function again after a second.
-    window.after(1000, update_vars, values, window)
+        # Sets up the list of processes in a Treeview, and the scrollbar to scroll it with.
+        scrollbar = tk.Scrollbar(self.window)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.treeview = ttk.Treeview(self.window, columns=("Name", "PID"), show="headings",
+                                     yscrollcommand=scrollbar.set)
+        self.treeview.heading("#1", text="Name", anchor=tk.W)
+        self.treeview.heading("#2", text="PID", anchor=tk.W)
+        self.treeview.column("#1", width=200)
+        self.treeview.column("#2", width=100)
+        self.treeview.pack(anchor=tk.W, fill=tk.BOTH, expand=True, padx=(5, 0), pady=(0, 5))
+        scrollbar.config(command=self.treeview.yview)
+        for i in psutil.pids():
+            self.treeview.insert("", "end", values=(psutil.Process(i).name(), i))
 
+        self.window.after(1000, self.update)
+        self.window.mainloop()
 
-def main():
-    # Set up the window.
-    window = tk.Tk()
-    window.title("TaskMaster")
-    window.minsize(300, 300)
-    window.maxsize(300, 300)
+    # Callback function to update usages and the process list. Runs itself again after a second.
+    def update(self):
+        # Set the CPU and RAM usage labels.
+        self.cpu_usage.set("CPU usage: " + str(psutil.cpu_percent()) + "%")
+        self.ram_usage.set("RAM usage: " + str(psutil.virtual_memory()[2]) + "%")
 
-    values = []
+        # Get pids currently in treeview.
+        treeview_pids = []
+        for child in self.treeview.get_children():
+            treeview_pids.append(self.treeview.item(child)["values"][1])
 
-    # The CPU usage is stored in a StringVar, so when it is updated, the label using it is also updated.
-    cpu_usage = tk.StringVar()
-    cpu_usage.set("CPU usage: " + str(psutil.cpu_percent()) + "%")
-    cpu_usage_label = tk.Label(textvariable=cpu_usage, padx=5)
-    cpu_usage_label.pack(anchor=tk.W)
-    values.append(cpu_usage)
+        # Add any processes to the treeview if they are not already in it.
+        for pid in psutil.pids():
+            if pid not in treeview_pids:
+                self.treeview.insert("", "end", values=(psutil.Process(pid).name(), pid))
 
-    # % RAM used.
-    ram_usage = tk.StringVar()
-    ram_usage.set("RAM usage: " + str(psutil.virtual_memory()[2]) + "%")
-    ram_usage_label = tk.Label(textvariable=ram_usage, padx=5)
-    ram_usage_label.pack(anchor=tk.W)
-    values.append(ram_usage)
+        # Delete processes from the treeview if they are no longer running.
+        for pid in treeview_pids:
+            if not psutil.pid_exists(pid):
+                for child in self.treeview.get_children():
+                    if self.treeview.item(child)["values"][1] == pid:
+                        self.treeview.delete(child)
 
-    # Sets up the list of processes and the scrollbar to scroll it with.
-    scrollbar = tk.Scrollbar(window)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    tree = ttk.Treeview(window, columns=("Name", "PID"), show="headings", yscrollcommand=scrollbar.set)
-    tree.heading("#1", text="Name", anchor=tk.W)
-    tree.heading("#2", text="PID", anchor=tk.W)
-    tree.column("#1", width=200)
-    tree.column("#2", width=100)
-    tree.pack(anchor=tk.W, fill=tk.BOTH, expand=True, padx=(5, 0), pady=(0, 5))
-    scrollbar.config(command=tree.yview)
-    for i in psutil.pids():
-        tree.insert("", "end", values=(psutil.Process(i).name(), i))
-    values.append(tree)
-
-    # The CPU and RAM usage is updated after a second has elapsed. The update function calls it again, so it repeatedly
-    # updates.
-    window.after(1000, update_vars, values, window)
-
-    window.mainloop()
+        self.window.after(1000, self.update)
 
 
 if __name__ == "__main__":
-    main()
+    gui = GUI()
