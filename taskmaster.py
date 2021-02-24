@@ -38,6 +38,7 @@ class GUI:
         self.treeview.heading("#2", text="PID", anchor=tk.W)
         self.treeview.column("#1", width=200)
         self.treeview.column("#2", width=100)
+        self.treeview.bind("<Button-1>", self.handle_treeview_click)
         self.treeview.pack(anchor=tk.W, fill=tk.BOTH, expand=True, padx=(5, 0), pady=(0, 5))
         scrollbar.config(command=self.treeview.yview)
         for i in psutil.pids():
@@ -47,7 +48,7 @@ class GUI:
         end_button = tk.Button(text="End process", command=self.end_process)
         end_button.pack(side=tk.LEFT, padx=(5, 0), pady=(0, 5))
 
-        self.window.after(1000, self.update)
+        self.window.after(1000, lambda: self.update())
         self.window.mainloop()
 
     # Callback function to update usages and the process list. Runs itself again after a second.
@@ -81,6 +82,32 @@ class GUI:
             process_to_end = self.treeview.selection()[0]
             pid = self.treeview.item(process_to_end)["values"][1]
             psutil.Process(pid).terminate()
+
+    # If the user clicks on the treeview, check if they clicked on a column header. If they clicked on one, sort by that
+    # column.
+    def handle_treeview_click(self, event):
+        if self.treeview.identify_region(event.x, event.y) == "heading":
+            column = self.treeview.identify_column(event.x)
+            if column == "#1":
+                self.sort_treeview("name")
+            elif column == "#2":
+                self.sort_treeview("pid")
+
+    # Sort the treeview by a given key (name or PID).
+    def sort_treeview(self, key):
+        processes = []
+
+        if key == "name":
+            for child in self.treeview.get_children():
+                processes.append((child, self.treeview.item(child)["values"][0]))
+        elif key == "pid":
+            for child in self.treeview.get_children():
+                processes.append((child, self.treeview.item(child)["values"][1]))
+
+        processes.sort(key=lambda process: process[1])
+
+        for i, process in enumerate(processes):
+            self.treeview.move(process[0], parent="", index=i)
 
 
 if __name__ == "__main__":
