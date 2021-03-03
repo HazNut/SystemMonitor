@@ -96,7 +96,6 @@ class GUI:
     # Sort the treeview by a given key (name or PID).
     def sort_treeview(self, key):
         processes = []
-
         if key == "name":
             for child in self.treeview.get_children():
                 processes.append((child, self.treeview.item(child)["values"][0]))
@@ -104,7 +103,7 @@ class GUI:
             for child in self.treeview.get_children():
                 processes.append((child, self.treeview.item(child)["values"][1]))
 
-        processes.sort(key=lambda process: process[1])
+        processes.sort(key=lambda process: process[1].lower())
 
         for i, process in enumerate(processes):
             self.treeview.move(process[0], parent="", index=i)
