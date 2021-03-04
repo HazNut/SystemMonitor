@@ -12,4 +12,4 @@ Make sure you install Python 3 - this release has been tested on Python 3.7, 3.8
 
 Unzip the release and run setup.bat, which will install all required dependencies from requirements.txt.
 
-Then, just run taskmaster.py.
+Then, just run taskmaster.pyw.
