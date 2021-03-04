@@ -1,5 +1,6 @@
 # A simple GUI application to view CPU and RAM usage, and view running processes.
 
+import bisect
 import tkinter as tk
 import tkinter.ttk as ttk
 import psutil
@@ -16,6 +17,7 @@ class GUI:
         self.window.title("TaskMaster")
         self.window.geometry("300x300")
         self.window.resizable(False, False)
+        self.sorting_mode = "pid"
 
         # The CPU usage is stored in a StringVar, so when it is updated, the label using it is also updated.
         self.cpu_usage = tk.StringVar()
@@ -59,19 +61,29 @@ class GUI:
 
         # Get pids currently in treeview.
         treeview_pids = []
+        treeview_names = []
         for child in self.treeview.get_children():
+            treeview_names.append(self.treeview.item(child)["values"][0].lower())
             treeview_pids.append(self.treeview.item(child)["values"][1])
 
+        treeview_names.sort(key=lambda process: process.lower())
+        treeview_pids.sort()
+
         # Add any processes to the treeview if they are not already in it.
-        for pid in psutil.pids():
-            if pid not in treeview_pids:
-                self.treeview.insert("", "end", values=(psutil.Process(pid).name(), pid))
+        for system_pid in psutil.pids():
+            if system_pid not in treeview_pids:
+                if self.sorting_mode == "name":
+                    self.treeview.insert("", bisect.bisect(treeview_names, psutil.Process(system_pid).name().lower()),
+                                         values=(psutil.Process(system_pid).name(), system_pid))
+                elif self.sorting_mode == "pid":
+                    self.treeview.insert("", bisect.bisect(treeview_pids, system_pid),
+                                         values=(psutil.Process(system_pid).name(), system_pid))
 
         # Delete processes from the treeview if they are no longer running.
-        for pid in treeview_pids:
-            if not psutil.pid_exists(pid):
+        for treeview_pid in treeview_pids:
+            if not psutil.pid_exists(treeview_pid):
                 for child in self.treeview.get_children():
-                    if self.treeview.item(child)["values"][1] == pid:
+                    if self.treeview.item(child)["values"][1] == treeview_pid:
                         self.treeview.delete(child)
 
         self.window.after(1000, self.update)
@@ -90,8 +102,10 @@ class GUI:
             column = self.treeview.identify_column(event.x)
             if column == "#1":
                 self.sort_treeview("name")
+                self.sorting_mode = "name"
             elif column == "#2":
                 self.sort_treeview("pid")
+                self.sorting_mode = "pid"
 
     # Sort the treeview by a given key (name or PID).
     def sort_treeview(self, key):
