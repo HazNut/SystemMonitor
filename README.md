@@ -8,7 +8,7 @@ It currently allows you to see your CPU and RAM usage, as well as a list of curr
 ## Setup
 The latest release can be downloaded from [here](https://github.com/HazNut/TaskMaster/releases/latest).
 
-Make sure you install Python 3 - this release has been tested on Python 3.7, 3.8 and 3.9.
+Make sure you install Python 3.
 
 Unzip the release and run setup.bat, which will install all required dependencies from requirements.txt.
 
