@@ -8,8 +8,6 @@ It currently allows you to see your CPU and RAM usage, as well as a list of curr
 ## Setup
 The latest release can be downloaded from [here](https://github.com/HazNut/TaskMaster/releases/latest).
 
-Make sure you install Python 3.
+You can either download the zip file, which contains an .exe and everything you will need to run the program.
 
-Unzip the release and run setup.bat, which will install all required dependencies from requirements.txt.
-
-Then, just run taskmaster.pyw.
+Or, you can download the source, either from the release or from cloning the repo. The repo will have the latest code but is not guaranteed to be stable. If you have Python 3 and pip installed, you can run setup.bat to install all required dependencies from requirements.txt. Then, just run taskmaster.pyw.
