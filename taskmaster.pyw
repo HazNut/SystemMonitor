@@ -15,6 +15,7 @@ class GUI:
         self.window.title("TaskMaster")
         self.window.geometry("300x300")
         self.window.resizable(False, False)
+        self.window.iconbitmap("images/icon.ico")
         
         # Sort by PID by default.
         self.sorting_mode = "pid"
