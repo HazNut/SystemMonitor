@@ -57,7 +57,7 @@ class GUI:
         end_button.pack(side=tk.LEFT, padx=(5, 0), pady=(5, 5))
 
         # Set the window to update every second, and start the event loop.
-        self.window.after(1000, lambda: self.update())
+        self.window.after(1000, self.update)
         self.window.mainloop()
 
     # Callback function to update usages and the process list. Runs every second.
