@@ -1,5 +1,4 @@
-.idea/shelf/
-.idea/workspace.xml
-venv
-setup.py
-dist
+/.idea/
+/venv/
+/dist/
+/setup.py
